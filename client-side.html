@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>ChatApp</title>
+    <style>
+      body {
+        background: #2c3e50;
+        margin: 0;
+        padding: 0;
+        font-family: "Arial", sans-serif;
+        color: #ecf0f1;
+      }
+
+      .chat {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #34495e;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      form {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px;
+        border-bottom: 1px solid #2c3e50;
+      }
+
+      input {
+        flex: 1;
+        padding: 10px;
+        margin-right: 10px;
+        border: 1px solid #2c3e50;
+        border-radius: 5px;
+        color: #132257;
+      }
+
+      button {
+        padding: 10px;
+        background-color: #3498db;
+        color: #ecf0f1;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      li {
+        margin-bottom: 8px;
+      }
+
+      .own-message {
+        text-align: right;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      .other-message {
+        text-align: left;
+        background-color: #34495e;
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      .message-info {
+        font-size: 12px;
+        color: #bdc3c7;
+      }
+
+      .ip-info {
+        font-size: 14px;
+        color: #95a5a6;
+        margin-bottom: 5px;
+      }
+    </style>
+  </head>
+
+  <body class="chat">
+    <form id="message-form">
+      <input
+        id="inp"
+        name="message"
+        type="text"
+        placeholder="Type your message"
+        autofocus
+        autocomplete="off"
+      />
+      <button type="submit">Send</button>
+    </form>
+    <ul id="messages-container"></ul>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+      const messagesContainer = document.getElementById("messages-container");
+
+      let IP = "";
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", "https://api.ipify.org/?format=json");
+      xhr.onload = function () {
+        const data = JSON.parse(xhr.responseText);
+        IP = data["ip"];
+      };
+      xhr.send();
+
+      socket.on("connect", function () {
+        console.log("Connected to Server :)");
+      });
+
+      socket.on("newMessage", function (message) {
+        const messageElement = document.createElement("li");
+        const messageContent = document.createElement("div");
+        messageContent.textContent = message.text;
+
+        if (message.from === IP) {
+          messageElement.className = "own-message";
+          const ipInfoElement = document.createElement("div");
+          ipInfoElement.className = "ip-info";
+          ipInfoElement.textContent = `Your IP: ${message.from}`;
+          messageElement.appendChild(ipInfoElement);
+        } else {
+          messageElement.className = "other-message";
+          const ipInfoElement = document.createElement("div");
+          ipInfoElement.className = "ip-info";
+          ipInfoElement.textContent = `Sender's IP: ${message.from}`;
+          messageElement.appendChild(ipInfoElement);
+        }
+
+        messageElement.appendChild(messageContent);
+        messagesContainer.appendChild(messageElement);
+      });
+
+      document
+        .getElementById("message-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          socket.emit("createMessage", {
+            to: IP,
+            text: document.querySelector("input[name=message]").value,
+          });
+          document.getElementById("inp").value = "";
+        });
+
+      socket.on("disconnect", function () {
+        console.log("Disconnected from server");
+      });
+    </script>
+  </body>
+</html>
+
