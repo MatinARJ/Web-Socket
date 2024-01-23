@@ -12,11 +12,16 @@ io.on('connection', (socket) => {
 
     socket.on('createMessage', (newMessage) => {
         console.log('newMessage', newMessage);
-
+	
+	// Start
+	const now = new Date();
+	const hours = now.getHours();
+	const minutes = now.getMinutes();
+	// End
         io.emit('newMessage', {
 	    from: newMessage.to,
 	    text: newMessage.text,
-            createdAt: Date.now()
+            createdAt: `${hours}:${minutes}`
         });
     });
 
