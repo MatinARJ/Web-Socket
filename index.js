@@ -11,13 +11,14 @@ io.on('connection', (socket) => {
     console.log('New user connected');
 
     socket.on('createMessage', (newMessage) => {
-        console.log('newMessage', newMessage);
+        console.log(`newMessage ${newMessage}`);
 	
-	// Start
+	// ---
 	const now = new Date();
 	const hours = now.getHours();
 	const minutes = now.getMinutes();
-	// End
+	// ---
+
         io.emit('newMessage', {
 	    from: newMessage.to,
 	    text: newMessage.text,
@@ -26,7 +27,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('disconnected from user');
+        console.log('Disconnected from user');
     });
 });
 

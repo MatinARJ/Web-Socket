@@ -151,7 +151,7 @@
 
           socket.emit("createMessage", {
             to: IP,
-            text: document.querySelector("input[name=message]").value,
+	    text: document.getElementById("inp").value,
           });
           document.getElementById("inp").value = "";
         });
